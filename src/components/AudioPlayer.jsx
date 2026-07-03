@@ -21,7 +21,7 @@ function fmt(secs) {
 export function AudioPlayer() {
   const {
     queue, currentIndex, isPlaying,
-    progress, duration, volume, playbackRate,
+    progress, duration, volume, playbackRate, audioError,
     togglePlay, next, previous, seek, setVolume, setPlaybackRate,
   } = usePlayerStore();
 
@@ -128,23 +128,29 @@ export function AudioPlayer() {
             </button>
           </div>
 
-          {/* Seek Slider bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', maxWidth: '400px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', width: '30px', textAlign: 'right' }}>
-              {fmt(progress)}
+          {/* Seek Slider bar or Error notice */}
+          {audioError ? (
+            <span style={{ fontSize: '11px', color: '#f87171', fontWeight: '500', letterSpacing: '-0.01em' }}>
+              ⚠️ {audioError}
             </span>
-            <input
-              type="range"
-              min="0"
-              max={duration || 100}
-              value={progress}
-              onChange={handleSeek}
-              style={{ flex: 1, accentColor: '#fff' }}
-            />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', width: '30px' }}>
-              {fmt(duration)}
-            </span>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', maxWidth: '400px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', width: '30px', textAlign: 'right' }}>
+                {fmt(progress)}
+              </span>
+              <input
+                type="range"
+                min="0"
+                max={duration || 100}
+                value={progress}
+                onChange={handleSeek}
+                style={{ flex: 1, accentColor: '#fff' }}
+              />
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', width: '30px' }}>
+                {fmt(duration)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Right: Speed and Volume Controls ── */}

@@ -12,10 +12,11 @@ export const usePlayerStore = create((set, get) => ({
   playbackRate: parseFloat(localStorage.getItem('pulsebeat_rate')) || 1.0,
   progress: 0,
   duration: 0,
+  audioError: null, // Error message to show in the player UI
 
   setQueue: (songs, startIndex = 0) => {
     const idx = startIndex >= 0 && startIndex < songs.length ? startIndex : 0;
-    set({ queue: songs, currentIndex: idx });
+    set({ queue: songs, currentIndex: idx, audioError: null });
     if (songs.length > 0) {
       get().playSong(songs[idx]);
     }
@@ -24,6 +25,7 @@ export const usePlayerStore = create((set, get) => ({
   playSong: (song) => {
     if (!song || !song.audioUrl) {
       console.warn('Cannot play song: Missing valid audioUrl', song);
+      set({ audioError: 'Missing valid audio URL' });
       return;
     }
 
@@ -32,6 +34,7 @@ export const usePlayerStore = create((set, get) => ({
       activeHowl = null;
     }
     clearInterval(progressInterval);
+    set({ audioError: null, progress: 0, duration: 0 });
 
     const audioUrl = song.audioUrl;
 
@@ -55,12 +58,21 @@ export const usePlayerStore = create((set, get) => ({
         clearInterval(progressInterval);
         get().next();
       },
-      onloaderror: (id, error) => {
-        console.error('Error loading audio stream:', error);
+      onloaderror: (id, err) => {
+        console.error('Error loading audio stream:', err);
         set({ isPlaying: false });
+        
+        // Give helpful instructions for local files loaded on the live website
+        if (audioUrl.startsWith('/src/songs/') && !window.location.hostname.includes('localhost')) {
+          set({ audioError: "Local file not found online. Run 'npm run dev' to play your local library." });
+        } else {
+          set({ audioError: "Failed to load audio stream." });
+        }
       },
-      onplayerror: (id, error) => {
-        console.error('Error playing audio stream:', error);
+      onplayerror: (id, err) => {
+        console.error('Error playing audio stream:', err);
+        set({ isPlaying: false });
+        set({ audioError: "Playback failed. Try unlocking audio." });
         sound.once('unlock', () => sound.play());
       }
     });

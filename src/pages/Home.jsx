@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import Fuse from 'fuse.js';
 import { usePlayerStore } from '../store/playerStore';
+import { useSongsStore } from '../store/songsStore';
 import { usePlaylistStore } from '../store/playlistStore';
 import { loadLocalSongs } from '../utils/localSongs';
 import { 
@@ -54,8 +55,8 @@ const FUSE_OPTIONS = {
 };
 
 export const Home = () => {
-  const [songs, setSongs]   = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [localSongs, setLocalSongs]   = useState([]);
+  const [localLoading, setLocalLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -70,6 +71,7 @@ export const Home = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
 
   const { setQueue, currentIndex, queue, isPlaying, togglePlay } = usePlayerStore();
+  const { songs: dbSongs, loading: dbLoading, fetchSongs } = useSongsStore();
   const { playlists, selectedPlaylist, addSongToPlaylist, removeSongFromPlaylist } = usePlaylistStore();
   const sortMenuRef = useRef(null);
 
@@ -90,22 +92,33 @@ export const Home = () => {
   useEffect(() => {
     loadLocalSongs()
       .then(loaded => {
-        setSongs(loaded);
-        setLoading(false);
+        setLocalSongs(loaded);
+        setLocalLoading(false);
+        if (loaded.length === 0) {
+          // If local library is empty (production build on server), fetch from Firestore
+          fetchSongs();
+        }
       })
       .catch(err => {
+        console.error('Local songs load failed, falling back to db:', err);
         setLoadError(err.message || 'Failed to load songs');
-        setLoading(false);
+        setLocalLoading(false);
+        fetchSongs();
       });
   }, []);
 
-  // Determine current active source songs
+  // Determine songs source (use local if available, otherwise Firestore database)
+  const availableSongs = useMemo(() => {
+    return localSongs.length > 0 ? localSongs : dbSongs;
+  }, [localSongs, dbSongs]);
+
+  // Filter songs based on selected playlist
   const sourceSongs = useMemo(() => {
     if (selectedPlaylist === null) {
-      return songs;
+      return availableSongs;
     }
     return playlists[selectedPlaylist] || [];
-  }, [songs, selectedPlaylist, playlists]);
+  }, [availableSongs, selectedPlaylist, playlists]);
 
   // Filter unique artists in current view
   const topArtists = useMemo(() => {
@@ -127,9 +140,9 @@ export const Home = () => {
       result = result.filter(s => s.artist.toLowerCase() === selectedArtist.toLowerCase());
     }
     result.sort((a, b) => {
-      if (sortBy === 'title') return a.title.localeCompare(b.title);
-      if (sortBy === 'artist') return a.artist.localeCompare(b.artist);
-      if (sortBy === 'album') return a.album.localeCompare(b.album);
+      if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
+      if (sortBy === 'artist') return (a.artist || '').localeCompare(b.artist || '');
+      if (sortBy === 'album') return (a.album || '').localeCompare(b.album || '');
       return 0;
     });
     return result;
@@ -159,7 +172,9 @@ export const Home = () => {
 
   const currentSongId = queue[currentIndex]?.id;
 
-  if (loading) {
+  const isLoading = localLoading || (localSongs.length === 0 && dbLoading);
+
+  if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ height: '32px', width: '180px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }} />
@@ -181,7 +196,9 @@ export const Home = () => {
           color: '#fff',
           fontFamily: "var(--font-display)"
         }}>
-          {selectedPlaylist === null ? 'My Library' : selectedPlaylist}
+          {selectedPlaylist === null 
+            ? (localSongs.length > 0 ? 'My Library' : 'Cloud Library') 
+            : selectedPlaylist}
         </h1>
         <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
           {sourceSongs.length} songs
@@ -189,9 +206,9 @@ export const Home = () => {
       </div>
 
       {/* Control Actions Row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyRules: 'space-between', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Minimal Play button */}
+          {/* Play all button */}
           <button
             onClick={handlePlayAll}
             disabled={displayList.length === 0}
@@ -284,7 +301,7 @@ export const Home = () => {
           </div>
         </div>
 
-        {/* Minimal search input */}
+        {/* Search input */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
