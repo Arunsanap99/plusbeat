@@ -5,8 +5,9 @@
  * Returns an array of song objects ready for the player — no folder picker needed.
  */
 
-// Vite glob: eager=false → lazy URLs; query: '?url' → returns the asset URL string
-const modules = import.meta.glob('../songs/*.mp3', { query: '?url', import: 'default', eager: false });
+// Import from the virtual module. In development, this runs the eager glob scan.
+// In production builds, this returns an empty object, completely bypassing directory scanning.
+import { modules } from 'virtual:local-songs';
 
 /* ── Parse filename → { title, album, artist } ─────────────────────────── */
 function parseFilename(filename) {
@@ -37,29 +38,25 @@ function parseFilename(filename) {
 
 /**
  * loadLocalSongs()
- * Resolves all glob URLs lazily and returns a sorted, deduped song list.
- * Call once on app start — the browser caches asset URLs automatically.
+ * Resolves all glob URLs eagerly and returns a sorted, deduped song list.
  */
 export async function loadLocalSongs() {
-  const entries = Object.entries(modules); // [ [path, importFn], ... ]
+  const entries = Object.entries(modules); // empty array in production
 
-  const songs = await Promise.all(
-    entries.map(async ([fullPath, importFn]) => {
-      const filename = fullPath.split('/').pop();          // "Song Name (320 kbps).mp3"
-      const audioUrl = await importFn();                   // resolves to "/assets/Song Name-abc123.mp3"
-      const { title, album, artist } = parseFilename(filename);
+  const songs = entries.map(([fullPath, audioUrl]) => {
+    const filename = fullPath.split('/').pop();          // "Song Name (320 kbps).mp3"
+    const { title, album, artist } = parseFilename(filename);
 
-      return {
-        id:       filename,
-        title:    title.trim(),
-        album:    album.trim(),
-        artist:   artist.trim(),
-        audioUrl: typeof audioUrl === 'string' ? audioUrl : audioUrl.default,
-        filename,
-        source:   'local',
-      };
-    })
-  );
+    return {
+      id:       filename,
+      title:    title.trim(),
+      album:    album.trim(),
+      artist:   artist.trim(),
+      audioUrl: typeof audioUrl === 'string' ? audioUrl : audioUrl.default,
+      filename,
+      source:   'local',
+    };
+  });
 
   // Sort by title
   songs.sort((a, b) => a.title.localeCompare(b.title));

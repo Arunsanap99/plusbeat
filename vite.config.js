@@ -8,16 +8,45 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+const virtualModuleId = 'virtual:local-songs'
+const resolvedVirtualModuleId = '\0' + virtualModuleId
+
+let isBuild = false
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    // Virtual module plugin to conditionally enable/disable local songs scan
+    {
+      name: 'virtual-local-songs',
+      configResolved(config) {
+        isBuild = config.command === 'build';
+      },
+      resolveId(id) {
+        if (id === virtualModuleId) {
+          return resolvedVirtualModuleId;
+        }
+        return null;
+      },
+      load(id) {
+        if (id === resolvedVirtualModuleId) {
+          if (isBuild) {
+            // In production build, do not scan songs directory at all
+            return 'export const modules = {};';
+          } else {
+            // In development mode, scan and eagerly import asset URLs
+            return `export const modules = import.meta.glob('/src/songs/*.mp3', { query: '?url', import: 'default', eager: true });`;
+          }
+        }
+        return null;
+      }
+    },
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       workbox: {
-        // Allow large JS bundles (dataset is big)
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -59,7 +88,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Code-split heavy libraries into separate chunks (function form required by Rolldown/Vite 8)
     rollupOptions: {
       output: {
         manualChunks: (id) => {
