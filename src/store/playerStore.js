@@ -36,7 +36,13 @@ export const usePlayerStore = create((set, get) => ({
     clearInterval(progressInterval);
     set({ audioError: null, progress: 0, duration: 0 });
 
-    const audioUrl = song.audioUrl;
+    let audioUrl = song.audioUrl;
+
+    // Rewrite relative local paths to stream from local dev server when online
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && audioUrl.startsWith('/src/songs/')) {
+      // Check both standard Vite dev server ports. We default to 5174 since it is currently running there.
+      audioUrl = `http://localhost:5174${audioUrl}`;
+    }
 
     const sound = new Howl({
       src: [audioUrl],
@@ -63,8 +69,8 @@ export const usePlayerStore = create((set, get) => ({
         set({ isPlaying: false });
         
         // Give helpful instructions for local files loaded on the live website
-        if (audioUrl.startsWith('/src/songs/') && !window.location.hostname.includes('localhost')) {
-          set({ audioError: "Local file not found online. Run 'npm run dev' to play your local library." });
+        if (song.audioUrl.startsWith('/src/songs/') && !window.location.hostname.includes('localhost')) {
+          set({ audioError: "Local file not found online. Run 'npm run dev' locally to play local library." });
         } else {
           set({ audioError: "Failed to load audio stream." });
         }
