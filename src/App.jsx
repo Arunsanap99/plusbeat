@@ -4,7 +4,9 @@ import Home from './pages/Home';
 import Search from './pages/Search';
 import AudioPlayer from './components/AudioPlayer';
 import { usePlaylistStore } from './store/playlistStore';
-import { FiHome, FiSearch, FiMenu, FiX, FiPlus, FiFolder, FiTrash2 } from 'react-icons/fi';
+import { useAuthStore } from './store/authStore';
+import AuthModal from './components/AuthModal';
+import { FiHome, FiSearch, FiMenu, FiX, FiPlus, FiFolder, FiTrash2, FiLogIn, FiLogOut, FiUser } from 'react-icons/fi';
 import './styles/index.css';
 
 function SidebarLink({ to, children, icon, onClick }) {
@@ -44,8 +46,14 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const { playlists, selectedPlaylist, setSelectedPlaylist, createPlaylist, deletePlaylist } = usePlaylistStore();
+  const { user, initAuth, logout } = useAuthStore();
+
+  useEffect(() => {
+    initAuth(); // Initialize auth listener on mount
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -130,7 +138,7 @@ export default function App() {
             display: 'flex',
             flexDirection: 'column',
             padding: '24px 12px',
-            gap: '24px',
+            gap: '20px',
             flexShrink: 0,
             height: '100%',
             zIndex: 999,
@@ -262,13 +270,90 @@ export default function App() {
 
             </div>
 
-            {/* App State Info */}
-            <div style={{ padding: '12px', borderRadius: '6px', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>Local Server</span>
-              </div>
+            {/* Profile / Auth Section */}
+            <div style={{
+              padding: '12px',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              {user ? (
+                /* Authenticated User Status */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt="Profile"
+                        style={{ width: '28px', height: '28px', borderRadius: '50%' }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '28px', height: '28px', borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.08)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', color: '#fff'
+                      }}>
+                        <FiUser size={14} />
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{
+                        margin: 0, fontSize: '12px', fontWeight: '600', color: '#fff',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                      }}>
+                        {user.displayName || 'Logged In'}
+                      </p>
+                      <p style={{
+                        margin: 0, fontSize: '10px', color: 'var(--text-muted)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                      }}>
+                        {user.email || user.phoneNumber || 'User Account'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={logout}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      background: 'none', border: 'none', color: 'var(--text-secondary)',
+                      fontSize: '12px', fontWeight: '500', cursor: 'pointer', width: '100%',
+                      padding: '6px', borderRadius: '6px', transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.color = '#fff';
+                      e.currentTarget.style.background = 'rgba(255, 68, 68, 0.08)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                      e.currentTarget.style.background = 'none';
+                    }}
+                  >
+                    <FiLogOut />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                /* Sign In Button */
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    background: '#fff', border: 'none', color: '#000',
+                    fontSize: '12px', fontWeight: '600', cursor: 'pointer', width: '100%',
+                    padding: '8px 12px', borderRadius: '20px', transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  <FiLogIn />
+                  <span>Sign In</span>
+                </button>
+              )}
             </div>
+
           </aside>
 
           {/* Drawer backdrop (Mobile only) */}
@@ -307,6 +392,9 @@ export default function App() {
         <div style={{ height: '80px', position: 'relative', zIndex: 10 }}>
           <AudioPlayer />
         </div>
+
+        {/* Authentication Modal */}
+        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       </div>
     </Router>
   );
