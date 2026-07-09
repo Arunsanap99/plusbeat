@@ -1,89 +1,215 @@
-# ‚ö° PulseBeat
+<p align="center">
+  <img src="./public/logo.png" alt="PulseBeat Logo" width="120" />
+</p>
 
-> **A premium, minimalist local music player built with React, Vite, Howler, and Firebase, featuring responsive drawer navigation and local playlist management.**
+<h1 align="center">?? PulseBeat</h1>
 
----
+<p align="center">
+  <strong>A premium, dark-themed music streaming web app ó built with React, Firebase &amp; Howler.js</strong>
+</p>
 
-PulseBeat is an elegant, content-first web audio player designed to deliver a modern music streaming experience for both local MP3 directories and cloud-synced database tracks. The layout mimics native apps like Spotify and Apple Music with a fully mobile-responsive sidebar drawer, custom local playlists, and detailed playback controls.
-
-![App Screenshot](https://raw.githubusercontent.com/user-attachments/assets/placeholder)
-
----
-
-## ‚ú® Features
-
-- **üìÇ Automatic Local Sync**: Auto-discovers and resolves all tracks inside the local directory using Vite‚Äôs asset glob module loader.
-- **‚ú® Strict Same-Name Deduplication**: Smart parsing and deduplication filters prevent duplicate copies of songs from appearing in the library.
-- **üéõÔ∏è Playback Rate Control**: Dynamic speed control (adjust playback rate between `0.5x`, `0.75x`, `Normal (1.0x)`, `1.25x`, `1.5x`, and `2.0x`) powered by the Howler.js API.
-- **üìÅ Spotify-like Playlists**:
-  - Instantly create, name, and delete custom playlists.
-  - Add tracks to playlists via the `+` hover popover dropdown.
-  - View playlist sizes and remove tracks dynamically.
-- **üîç Database Search & Filtering**:
-  - Filter both local and cloud collections by search term, album, or artist.
-  - Staggered quick filter pills for the most popular artists.
-  - Sort track rows alphabetically by Title, Artist, or Album.
-- **üì± Fully Mobile Responsive**: Adaptable layouts; shifts from a desktop sidebar layout to a collapsible drawer navigation overlay with dim backdrop filters on small viewports.
-- **üßº Minimalist Modern Aesthetics**: Premium dark-slate theme featuring thin borders, clean typography, dynamic equalizer bar animations, and zero visual clutter.
+<p align="center">
+  <a href="https://github.com/Arunsanap99/plusbeat/stargazers">
+    <img src="https://img.shields.io/github/stars/Arunsanap99/plusbeat?style=flat-square&color=white&labelColor=0d0d12" alt="Stars" />
+  </a>
+  <a href="https://github.com/Arunsanap99/plusbeat/issues">
+    <img src="https://img.shields.io/github/issues/Arunsanap99/plusbeat?style=flat-square&color=white&labelColor=0d0d12" alt="Issues" />
+  </a>
+  <img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react&logoColor=white&labelColor=0d0d12" alt="React" />
+  <img src="https://img.shields.io/badge/Firebase-12-orange?style=flat-square&logo=firebase&logoColor=white&labelColor=0d0d12" alt="Firebase" />
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=0d0d12" alt="Vite" />
+  <img src="https://img.shields.io/badge/Deployed-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white&labelColor=0d0d12" alt="Netlify" />
+</p>
 
 ---
 
-## üõ†Ô∏è Tech Stack
+## ? Features
 
-- **Framework**: [React 19](https://react.dev/) + [Vite 8](https://vite.dev/)
-- **Audio Engine**: [Howler.js](https://howlerjs.com/) (low-latency HTML5 audio management)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand) (lightweight global store)
-- **Cloud Database**: [Firebase Cloud Firestore](https://firebase.google.com/docs/firestore) + Auth
-- **Icons**: [Lucide React / Feather Icons](https://lucide.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) + Custom CSS variables
+| Feature | Description |
+|---|---|
+| ?? **Full Audio Player** | Play, pause, skip, seek, volume control, and playback speed (0.5xñ2x) |
+| ?? **Fuzzy Search** | Smart Fuse.js-powered search with real-time match highlighting |
+| ?? **Playlist Manager** | Create, delete, and manage multiple playlists ó persisted in localStorage |
+| ?? **Song Library** | Browse thousands of songs from Firebase Firestore |
+| ?? **Authentication** | Sign in via Google OAuth or Phone OTP (Firebase Auth) |
+| ?? **Fully Responsive** | Mobile-first layout with drawer navigation |
+| ? **Blazing Fast** | Vite 8 + React 19 with code-splitting and lazy loading |
+| ??? **Sort & Filter** | Sort songs by title, artist, or album. Filter by artist |
+| ?? **Offline-ready** | PWA-enabled with service worker caching |
+| ?? **Multi-platform Deployment** | Hosted on both **Firebase Hosting** and **Netlify** |
 
 ---
 
-## üöÄ Getting Started
+## ??? Tech Stack
 
-### 1. Installation
+```
+Frontend     ?  React 19, React Router v7, Framer Motion, Zustand
+Audio        ?  Howler.js (HTML5 audio engine)
+Search       ?  Fuse.js (fuzzy search)
+Backend/DB   ?  Firebase Firestore (songs database)
+Auth         ?  Firebase Authentication (Google + Phone OTP)
+Styling      ?  Vanilla CSS + CSS Variables (dark theme)
+Build Tool   ?  Vite 8
+PWA          ?  vite-plugin-pwa (service worker + manifest)
+Deployment   ?  Firebase Hosting, Netlify
+```
 
-Clone the repository and install the dependencies:
+---
+
+## ?? Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 18
+- **npm** >= 9
+- A **Firebase project** with Firestore & Authentication enabled
+
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/pulsebeat.git
-cd pulsebeat
+git clone https://github.com/Arunsanap99/plusbeat.git
+cd plusbeat
+```
+
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
 
-### 2. Configure Firebase Environment
+### 3. Configure Environment Variables
 
-Create a `.env` file in the project root folder and insert your Firebase configuration keys:
+Create a `.env` file in the project root:
 
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-### 3. Local Development
+> Warning: Never commit your `.env` file. It is already listed in `.gitignore`.
 
-Start the Vite hot-reloading dev server:
+### 4. Run Locally
 
 ```bash
 npm run dev
 ```
 
-The application will run locally at `http://localhost:5173` (or the next available port).
+Open http://localhost:5173 in your browser.
 
-### 4. Optional: Batch Upload Local Songs to Cloud Database
+---
 
-If you wish to synchronize your local `src/songs/` folder metadata to your Firestore `songs` collection, run the batch upload script:
+## ?? Seeding Songs to Firestore
+
+To upload your local MP3 library to Firestore, run the import script:
 
 ```bash
 node src/scripts/insertAllSongs.js
 ```
 
+> This scans `src/songs/`, parses filenames into `title / album / artist`, deduplicates, and writes them to the `songs` collection in Firestore.
+
 ---
 
-## üìÑ License
+## ?? Deployment
 
-This project is licensed under the MIT License.
+### Firebase Hosting
+
+```bash
+npm run build
+firebase deploy
+```
+
+### Netlify
+
+**Option A ñ CLI:**
+```bash
+npm run build
+npx netlify-cli deploy --prod
+```
+
+**Option B ñ Auto-deploy via Git (Recommended):**
+
+Push to `main` ó Netlify reads `netlify.toml` and builds automatically.
+
+> Add all `VITE_FIREBASE_*` environment variables in your **Netlify dashboard ? Site Settings ? Environment Variables**.
+
+---
+
+## ?? Project Structure
+
+```
+plusbeat/
++-- public/                  # Static assets (favicon, logo, PWA icons)
++-- src/
+¶   +-- components/
+¶   ¶   +-- AudioPlayer.jsx  # Fixed bottom audio player bar
+¶   ¶   +-- AuthModal.jsx    # Login modal (Google + Phone OTP)
+¶   +-- pages/
+¶   ¶   +-- Home.jsx         # Main library view with search, sort, filter
+¶   ¶   +-- Search.jsx       # Dedicated search page
+¶   +-- store/
+¶   ¶   +-- playerStore.js   # Howler.js audio engine (Zustand)
+¶   ¶   +-- songsStore.js    # Firestore songs fetching (Zustand)
+¶   ¶   +-- playlistStore.js # Playlist CRUD (localStorage + Zustand)
+¶   ¶   +-- authStore.js     # Firebase auth (Zustand)
+¶   +-- firebase/
+¶   ¶   +-- config.js        # Firebase app initialization
+¶   +-- utils/
+¶   ¶   +-- localSongs.js    # Local MP3 discovery via Vite glob
+¶   +-- scripts/             # Node.js admin scripts for Firestore
+¶   +-- songs/               # Local MP3 files (not committed to Git)
+¶   +-- styles/
+¶       +-- index.css        # Global CSS variables & dark theme
++-- .firebaserc              # Firebase project alias
++-- firebase.json            # Firebase hosting & Firestore config
++-- netlify.toml             # Netlify build & redirect config
++-- vite.config.js           # Vite + plugins configuration
++-- package.json
+```
+
+---
+
+## ??? Audio Player Features
+
+- ?? **Play / Pause** with smooth toggle
+- ?? **Skip forward / backward** through queue
+- ?? **Volume control** with mute toggle
+- ? **Playback speed:** 0.5x ∑ 0.75x ∑ Normal ∑ 1.25x ∑ 1.5x ∑ 2x
+- ?? **Seek bar** with current time and total duration
+- ?? **Auto-advance** to next track on end
+
+---
+
+## ?? Authentication
+
+PulseBeat supports two sign-in methods via **Firebase Auth**:
+
+1. **Google Sign-In** ó One-click OAuth popup
+2. **Phone OTP** ó Enter phone number ? receive SMS code ? verify
+
+---
+
+## ?? Contributing
+
+Pull requests are welcome! For major changes, please open an issue first.
+
+1. Fork the project
+2. Create your feature branch: `git checkout -b feat/your-feature`
+3. Commit your changes: `git commit -m "feat: add your feature"`
+4. Push to the branch: `git push origin feat/your-feature`
+5. Open a Pull Request
+
+---
+
+## ?? License
+
+This project is open-source and available under the [MIT License](LICENSE).
+
+---
+
+<p align="center">Made with ?? by <a href="https://github.com/Arunsanap99">Arunsanap99</a></p>

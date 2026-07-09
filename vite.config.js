@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -16,6 +17,21 @@ let isBuild = false
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    {
+      name: 'copy-songs-to-dist',
+      closeBundle() {
+        const srcDir = path.resolve(__dirname, 'src/songs');
+        const destDir = path.resolve(__dirname, 'dist/src/songs');
+        if (fs.existsSync(srcDir)) {
+          fs.mkdirSync(destDir, { recursive: true });
+          const files = fs.readdirSync(srcDir);
+          for (const file of files) {
+            fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+          }
+          console.log(`Copied ${files.length} songs to dist/src/songs`);
+        }
+      }
+    },
     // Virtual module plugin to conditionally enable/disable local songs scan
     {
       name: 'virtual-local-songs',
